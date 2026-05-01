@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ellagent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+    </svg>
+    Ellagent
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-item active" data-view="creator" onclick="switchView('creator')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+      </svg>
+      Creator
+    </div>
+    <div class="nav-item" data-view="operator" onclick="switchView('operator')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/>
+      </svg>
+      Operator
+    </div>
+    <div class="nav-item" data-view="skills" onclick="switchView('skills')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+      </svg>
+      Skills
+    </div>
+    <div class="nav-item" data-view="settings" onclick="switchView('settings')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      Settings
+    </div>
+  </nav>
+
+  <div class="sidebar-agents-label">Agents</div>
+  <div id="sidebar-agent-list">
+    <div style="padding: 12px 16px; font-size: 12px; color: var(--text-muted);">No agents yet</div>
+  </div>
+</aside>
+
+<!-- ── Main Content ── -->
+<div id="main">
+  <!-- Top Bar -->
+  <header id="topbar">
+    <span id="topbar-title">Creator</span>
+    <div class="health-indicator" id="health-indicator" title="LM Studio connection status">
+      <div class="health-dot" id="health-dot"></div>
+      <span id="health-text">Connecting...</span>
+    </div>
+  </header>
+
+  <!-- ══ CREATOR VIEW ══ -->
+  <div id="creator-view" class="view active">
+
+    <!-- ── STATE 1: Home / History ── -->
+    <div id="creator-home" class="creator-home">
+      <div class="creator-home-header">
+        <div>
+          <div class="creator-home-title">Agent Creator</div>
+          <div class="creator-home-sub">Design and instantiate AI agents powered by your local LLM</div>
+        </div>
+        <button class="btn btn-accent" onclick="startNewAgent()">+ New Agent</button>
+      </div>
+      <div id="creator-agent-list" class="creator-agent-list">
+        <div class="creator-empty-state">
+          <div class="creator-empty-icon">🤖</div>
+          <div class="creator-empty-text">No agents yet</div>
+          <div class="creator-empty-sub">Click "New Agent" to design your first AI agent</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STATE 2: Creating Workspace ── -->
+    <div id="creator-workspace" class="creator-workspace" style="display:none;">
+
+      <!-- Chat Panel -->
+      <div class="creator-chat-panel">
+        <div class="panel-header" style="display:flex; align-items:center; justify-content:space-between; padding-right:14px;">
+          <span>Design Your Agent</span>
+          <button class="btn btn-ghost" style="font-size:12px; padding:5px 12px;" onclick="cancelCreation()">← Back</button>
+        </div>
+        <div class="chat-messages" id="creator-messages">
+          <div class="message system-msg">
+            <div class="message-bubble">
+              Describe the agent you want to build — or fill in the fields on the right directly.
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-bar">
+          <textarea
+            id="creator-input"
+            class="chat-input"
+            placeholder="e.g. I want an agent that monitors CSV files and summarizes them..."
+            rows="1"
+            onkeydown="handleCreatorKey(event)"
+          ></textarea>
+          <button class="send-btn" id="creator-send-btn" onclick="sendCreatorMessage()">Send</button>
+        </div>
+      </div>
+
+      <!-- Editable Preview Panel -->
+      <div class="creator-preview-panel">
+        <div class="panel-header" id="preview-panel-header" style="display:flex; align-items:center; justify-content:space-between; padding-right:14px;">
+          <span>Edit &amp; Preview</span>
+          <span id="edit-mode-badge" style="display:none;" class="edit-mode-badge">✏ Editing</span>
+        </div>
+        <div id="creator-preview" class="creator-preview-scroll">
+
+          <div class="preview-field">
+            <label class="preview-label" for="prev-name">Name <span class="required-star">*</span></label>
+            <input class="preview-input" id="prev-name" type="text"
+              placeholder="e.g. CSV File Monitor" oninput="onNameInput()" />
+          </div>
+
+          <div class="preview-field">
+            <label class="preview-label" for="prev-slug">Slug <span class="required-star">*</span></label>
+            <input class="preview-input mono" id="prev-slug" type="text"
+              placeholder="csv-file-monitor" oninput="onSlugInput()" />
+            <div class="field-hint">Lowercase letters, numbers, hyphens only</div>
+          </div>
+
+          <div class="preview-field">
+            <label class="preview-label" for="prev-description">Description</label>
+            <textarea class="preview-input" id="prev-description" rows="3"
+              placeholder="What does this agent do?" oninput="onPreviewFieldChange('description')"></textarea>
+          </div>
+
+          <div class="preview-field">
+            <label class="preview-label" for="prev-systemprompt">System Prompt <span class="required-star">*</span></label>
+            <textarea class="preview-input" id="prev-systemprompt" rows="8"
+              placeholder="The agent's core instructions, constraints, and output format..."
+              oninput="onPreviewFieldChange('systemPrompt')"></textarea>
+          </div>
+
+          <div class="preview-field">
+            <label class="preview-label" for="prev-soul">Soul / Personality</label>
+            <textarea class="preview-input" id="prev-soul" rows="3"
+              placeholder="Personality, tone, communication style, values..."
+              oninput="onPreviewFieldChange('soul')"></textarea>
+          </div>
+
+          <div class="preview-field">
+            <div class="preview-label">Skills</div>
+            <div id="prev-skills-container">
+              <div style="color:var(--text-muted); font-size:12px;">Loading skills...</div>
+            </div>
+          </div>
+
+          <div class="preview-field">
+            <div class="preview-label">MCP Servers</div>
+            <div id="prev-mcp-container">
+              <div style="color:var(--text-muted); font-size:12px; padding:2px 0;">Loading…</div>
+            </div>
+          </div>
+
+          <div class="preview-field">
+            <label class="preview-label" for="prev-initial-memory">Initial Memory</label>
+            <textarea class="preview-input" id="prev-initial-memory" rows="2"
+              placeholder="Seed facts to remember from the start (optional)"
+              oninput="onPreviewFieldChange('initialMemory')"></textarea>
+          </div>
+
+          <div class="preview-field preview-field-inline">
+            <label class="preview-label">Enable Memory by Default</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="prev-memory-enabled" onchange="onPreviewFieldChange('memoryEnabled')">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+            <span class="field-hint">When on, sessions with this agent will start with memory analysis enabled.</span>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="restore-btn" id="restore-btn" onclick="restoreAgent()" style="display:none;" title="Revert to last backup">↩ Restore Backup</button>
+            <button class="finalize-btn" id="finalize-btn" onclick="finalizeAgent()" disabled style="flex:1;">
+              ✓ Finalize &amp; Create Agent
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STATE 3: Success ── -->
+    <div id="creator-success" class="creator-success-state" style="display:none;">
+      <div class="success-card">
+        <div class="success-icon">✅</div>
+        <div class="success-title" id="success-title">Agent Created!</div>
+        <div class="success-agent-name" id="success-agent-name">Agent Name</div>
+        <div class="success-slug" id="success-agent-slug">slug</div>
+        <div class="success-skill-summary" id="success-skill-summary"></div>
+        <div class="success-actions">
+          <button class="btn btn-ghost" onclick="startNewAgent()">+ Create Another Agent</button>
+          <button class="btn btn-accent" id="success-open-operator-btn" onclick="openCreatedInOperator()">
+            Open in Operator →
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /creator-view -->
+
+  <!-- ══ OPERATOR VIEW ══ -->
+  <div id="operator-view" class="view">
+
+    <!-- Agent Grid -->
+    <div id="agent-grid-container">
+      <div id="agent-grid-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+        <div>
+          <div style="font-size:18px; font-weight:700;">Your Agents</div>
+          <div style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">Select an agent to start a session</div>
+        </div>
+        <button class="btn btn-ghost" onclick="loadAgents()" style="font-size:12px; padding:7px 14px;">⟳ Refresh</button>
+      </div>
+      <div class="agent-grid" id="agent-grid">
+        <div class="agent-grid-empty">
+          <div class="agent-grid-empty-icon">🤖</div>
+          <div>No agents yet — create one in the Creator tab</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operator Chat (hidden until agent selected) -->
+    <div id="operator-chat-container">
+      <div id="op-chat-topbar">
+        <button class="op-back-btn" onclick="exitChat()">← Back</button>
+        <div id="op-agent-name">Agent</div>
+        <span id="op-saving-badge" class="badge badge-saving" style="display:none;">Saving memory...</span>
+        <span id="memory-badge" class="badge badge-memory" title="">&#x1F9E0; Memory updated</span>
+        <div id="token-usage-display" class="token-usage-display" style="display:none;" title="">
+          <div class="token-bar"><div class="token-bar-fill" id="token-bar-fill"></div></div>
+          <span id="token-usage-text"></span>
+        </div>
+        <button class="auto-approve-toggle" id="memory-toggle-btn" onclick="toggleMemory()" title="When active, the agent will automatically remember key facts from your conversation">
+          <span class="toggle-dot"></span>
+          <span id="memory-toggle-label">Memory Disabled</span>
+        </button>
+        <button class="auto-approve-toggle" id="auto-approve-btn" onclick="toggleAutoApprove()" title="When active, all tool calls execute without asking for approval">
+          <span class="toggle-dot"></span>
+          Auto-approve tools
+        </button>
+        <button class="op-sessions-btn" onclick="toggleToolsPanel()">Tools</button>
+        <button class="op-sessions-btn" onclick="toggleMemoryPanel()">Memory</button>
+        <button class="op-sessions-btn" onclick="toggleSessionsPanel()">Sessions</button>
+      </div>
+
+      <div class="op-chat-layout">
+        <div class="op-main-chat">
+          <div class="drag-overlay" id="drag-overlay">
+            <div class="drag-overlay-inner">
+              <div class="drag-overlay-icon">⬇</div>
+              Drop files or images here
+            </div>
+          </div>
+          <div class="chat-messages" id="operator-messages"></div>
+          <div class="chat-attachments" id="chat-attachments"></div>
+          <div class="chat-input-bar">
+            <input type="file" id="file-picker" multiple style="display:none"
+              accept=".txt,.md,.json,.js,.ts,.jsx,.tsx,.py,.css,.html,.xml,.yaml,.yml,.csv,.log,.sh,.sql,.env,.toml,.ini,.cfg,.conf,.rs,.go,.java,.rb,.php,.c,.cpp,.h,.hpp,.cs,.swift,.kt,.r,.scala,.vue,.svelte,.jpg,.jpeg,.png,.gif,.webp,.bmp,.svg,.tiff,.ico,.pdf,.docx"
+              onchange="onFilePicked(event)">
+            <button class="attach-btn" onclick="document.getElementById('file-picker').click()" title="Attach files">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+              </svg>
+            </button>
+            <textarea
+              id="operator-input"
+              class="chat-input"
+              placeholder="Send a message..."
+              rows="1"
+              onkeydown="handleOperatorKey(event)"
+            ></textarea>
+            <button class="send-btn" id="operator-send-btn" onclick="sendOperatorMessage()">Send</button>
+          </div>
+        </div>
+
+        <!-- Tools Panel -->
+        <div id="tools-panel">
+          <div class="sessions-panel-header">
+            Session Tools
+            <button class="sessions-panel-close" onclick="toggleToolsPanel()">×</button>
+          </div>
+          <div id="tools-panel-list">
+            <div style="padding:12px 14px; font-size:12px; color:var(--text-muted);">No active session</div>
+          </div>
+        </div>
+
+        <!-- Memory Panel -->
+        <div id="memory-panel">
+          <div class="sessions-panel-header">
+            Long-term Memory
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button class="memory-reset-btn" onclick="resetMemory()" title="Permanently erase all long-term memory for this agent">Reset</button>
+              <button class="sessions-panel-close" onclick="toggleMemoryPanel()">×</button>
+            </div>
+          </div>
+          <div id="memory-panel-body">
+            <div style="padding:14px; font-size:12px; color:var(--text-muted);">No active session</div>
+          </div>
+          <div class="memory-add-form">
+            <select id="memory-add-category" class="memory-add-select">
+              <option value="context">Context</option>
+              <option value="user_profile">User Profile</option>
+              <option value="preferences">Preferences</option>
+              <option value="goals">Goals</option>
+            </select>
+            <textarea id="memory-add-content" class="memory-add-textarea" placeholder="Add a fact about the user or context…" rows="2"></textarea>
+            <button class="btn btn-accent" style="font-size:12px; padding:6px 12px; align-self:flex-end;" onclick="submitAddMemoryEntry()">Add</button>
+          </div>
+        </div>
+
+        <!-- Sessions Panel -->
+        <div id="sessions-panel">
+          <div class="sessions-panel-header">
+            Past Sessions
+            <button class="sessions-panel-close" onclick="toggleSessionsPanel()">×</button>
+          </div>
+          <div id="sessions-list">
+            <div style="padding:12px 14px; font-size:12px; color:var(--text-muted);">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /operator-view -->
+
+  <!-- ══ SETTINGS VIEW ══ -->
+  <div id="settings-view" class="view">
+    <div class="settings-page">
+      <div class="settings-header">
+        <div class="settings-title">LM Studio Configuration</div>
+        <div class="settings-subtitle">Configure the local LLM endpoint used by all agents</div>
+      </div>
+
+      <div class="settings-cards-row">
+
+        <div class="settings-card">
+          <div class="settings-section-title">Connection</div>
+
+          <div class="settings-field">
+            <label class="settings-label" for="cfg-base-url">Base URL</label>
+            <input class="settings-input" id="cfg-base-url" type="url"
+              placeholder="http://localhost:1234/v1" />
+            <div class="settings-hint">OpenAI-compatible endpoint exposed by LM Studio (include <code>/v1</code>)</div>
+          </div>
+
+          <div class="settings-field">
+            <label class="settings-label" for="cfg-api-key">API Key</label>
+            <input class="settings-input" id="cfg-api-key" type="password"
+              placeholder="lm-studio  (or leave blank)" autocomplete="new-password" />
+            <div class="settings-hint">LM Studio accepts any non-empty string. Leave blank for the default.</div>
+          </div>
+
+          <div class="settings-field">
+            <label class="settings-label" for="cfg-model">Model</label>
+            <div class="settings-model-row">
+              <select class="settings-input settings-select" id="cfg-model">
+                <option value="">— connect to LM Studio to load models —</option>
+              </select>
+              <button class="btn btn-ghost settings-refresh-btn" id="cfg-model-refresh"
+                onclick="refreshModelList()" title="Refresh model list from LM Studio">⟳</button>
+            </div>
+            <div class="settings-hint">Models currently loaded in LM Studio. Click ⟳ to refresh.</div>
+          </div>
+
+          <div class="settings-field">
+            <label class="settings-label" for="cfg-timeout">Request Timeout (seconds)</label>
+            <input class="settings-input" id="cfg-timeout" type="number" min="10" max="600" step="1"
+              placeholder="120" style="max-width:140px;" />
+            <div class="settings-hint">How long to wait for a response before giving up</div>
+          </div>
+
+          <div class="settings-field">
+            <label class="settings-label" for="cfg-max-tool-depth">Max Tool Call Depth</label>
+            <input class="settings-input" id="cfg-max-tool-depth" type="number" min="1" max="50" step="1"
+              placeholder="5" style="max-width:140px;" />
+            <div class="settings-hint">Maximum number of consecutive tool calls before stopping (default: 5)</div>
+          </div>
+
+          <div class="settings-field">
+            <label class="settings-label" for="cfg-log-level">Log Level</label>
+            <select class="settings-input" id="cfg-log-level" style="max-width:240px;">
+              <option value="off">Off — no logging</option>
+              <option value="error">Error — errors only</option>
+              <option value="info">Info — normal operations (default)</option>
+              <option value="debug">Debug — full detail + console output</option>
+            </select>
+            <div class="settings-hint">Controls what is written to daily log files in /logs. Debug also prints to the server console.</div>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-section-title">Model Load Configuration</div>
+          <div class="settings-hint" style="margin-bottom:16px;">Applied when LM Studio loads the model. Saving with any change here will unload and reload the model.</div>
+
+          <div class="settings-fields-grid">
+
+            <div class="settings-field">
+              <label class="settings-label" for="cfg-context-window">Context Length (tokens)</label>
+              <input class="settings-input" id="cfg-context-window" type="number" min="512" max="1048576" step="512"
+                placeholder="4096" />
+              <div class="settings-hint">Max tokens the model will consider. Drives the context usage bar in sessions.</div>
+            </div>
+
+            <div class="settings-field">
+              <label class="settings-label" for="cfg-eval-batch-size">Eval Batch Size</label>
+              <input class="settings-input" id="cfg-eval-batch-size" type="number" min="1" max="65536" step="1"
+                placeholder="Default" />
+              <div class="settings-hint">Input tokens processed per batch. llama.cpp only. Blank = model default.</div>
+            </div>
+
+            <div class="settings-field">
+              <label class="settings-label" for="cfg-flash-attention">Flash Attention</label>
+              <select class="settings-input settings-select" id="cfg-flash-attention">
+                <option value="">Default</option>
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+              </select>
+              <div class="settings-hint">Reduces memory usage and improves speed. llama.cpp only.</div>
+            </div>
+
+            <div class="settings-field">
+              <label class="settings-label" for="cfg-offload-kv-cache">Offload KV Cache to GPU</label>
+              <select class="settings-input settings-select" id="cfg-offload-kv-cache">
+                <option value="">Default</option>
+                <option value="true">Yes (GPU)</option>
+                <option value="false">No (CPU/RAM)</option>
+              </select>
+              <div class="settings-hint">GPU is faster; CPU/RAM uses less VRAM. llama.cpp only.</div>
+            </div>
+
+            <div class="settings-field">
+              <label class="settings-label" for="cfg-num-experts">Num Experts</label>
+              <input class="settings-input" id="cfg-num-experts" type="number" min="1" max="256" step="1"
+                placeholder="Default" />
+              <div class="settings-hint">Experts used per inference step for MoE models. llama.cpp only. Blank = default.</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /settings-cards-row -->
+
+      <!-- MCP Servers -->
+      <div class="settings-card settings-card-full" style="margin-top:24px; margin-bottom:32px;">
+        <div class="settings-section-title" style="margin-bottom:4px;">MCP Servers</div>
+        <div class="settings-hint" style="margin-bottom:16px;">Global MCP server connections available to agents. Each agent toggles which servers it uses.</div>
+
+        <div id="settings-mcp-list"></div>
+
+        <div style="margin-top:12px;">
+          <button class="btn btn-ghost btn-sm" onclick="addSettingsMcpServer()">+ Add MCP Server</button>
+        </div>
+      </div>
+
+
+      <div class="settings-footer">
+        <div id="settings-status" class="settings-status"></div>
+        <div class="settings-actions">
+          <button class="btn btn-ghost" id="settings-test-btn" onclick="testConnection()">Test Connection</button>
+          <button class="btn btn-accent" id="settings-save-btn" onclick="saveSettings()">Save Settings</button>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /settings-view -->
+
+  <!-- ══ SKILLS VIEW ══ -->
+  <div id="skills-view" class="view">
+
+    <!-- State 1: Home / Card list -->
+    <div id="skills-home" class="skills-home">
+      <div class="skills-home-header">
+        <div>
+          <div class="skills-home-title">Skills</div>
+          <div class="skills-home-sub">Extend your agents with reusable tools</div>
+        </div>
+        <button class="btn btn-accent" onclick="skillNew()">+ New Skill</button>
+      </div>
+      <div id="skills-list-body" class="skills-card-list"></div>
+    </div>
+
+    <!-- State 2: Detail / Editor -->
+    <div id="skills-workspace" class="skills-workspace" style="display:none;">
+      <div id="skills-detail-content"></div>
+    </div>
+
+  </div><!-- /skills-view -->
+
+</div><!-- /main -->
+
+<!-- ── Session Loading Overlay ── -->
+<div id="session-loading-overlay">
+  <div class="session-loading-box">
+    <div class="session-loading-spinner"></div>
+    <div class="session-loading-title">Loading Session</div>
+    <div class="session-loading-agent" id="session-loading-agent-name"></div>
+  </div>
+</div>
+
+<!-- ── Approval Modal ── -->
+<div id="approval-modal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span class="modal-title-icon">⚠</span>
+      Tool Execution Approval
+    </div>
+    <div class="modal-desc" id="approval-desc">The agent wants to execute a tool that requires your approval.</div>
+    <div class="modal-detail" id="approval-detail"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="respondToApproval(false)">Deny</button>
+      <button class="btn btn-success" onclick="respondToApproval(true)">Approve</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Confirmation Modal ── -->
+<div id="delete-modal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span class="modal-title-icon" style="color:var(--danger);">🗑</span>
+      Delete Agent
+    </div>
+    <div class="modal-desc" id="delete-modal-desc">Are you sure you want to delete this agent?</div>
+    <div class="modal-detail" id="delete-modal-detail" style="font-size:13px; padding:8px 12px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" id="delete-confirm-btn">Delete Agent</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast Container ── -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="/js/creator.js"></script>
+<script src="/js/operator.js"></script>
+<script src="/js/settings.js"></script>
+<script src="/js/skills.js"></script>
+<script>
+  // ── View switching ──
+  function switchView(view) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`${view}-view`).classList.add('active');
+    document.querySelector(`[data-view="${view}"]`).classList.add('active');
+    const titles = { creator: 'Creator', operator: 'Operator', skills: 'Skills', settings: 'Settings' };
+    document.getElementById('topbar-title').textContent = titles[view] || view;
+    if (view === 'operator') loadAgents();
+    if (view === 'skills')   loadSkillsView();
+    if (view === 'creator')  loadGlobalMcpServers().then(() => renderMcpSection(window.currentDraft?.enabledMcpServers || []));
+    if (view === 'settings') { loadSettingsView(); startHealthPolling(); }
+    else stopHealthPolling();
+  }
+
+  function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
+
+  function makeAvatar(name) {
+    return (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    try {
+      return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch { return iso; }
+  }
+
+  // ── Health check — runs once on load, then only polls while on the settings page ──
+  let _healthPollId = null;
+
+  async function checkHealth() {
+    const dot = document.getElementById('health-dot');
+    const text = document.getElementById('health-text');
+    try {
+      const r = await fetch('/api/health');
+      const d = await r.json();
+      if (d.ok) {
+        dot.className = 'health-dot online';
+        text.textContent = d.model || 'Online';
+      } else {
+        dot.className = 'health-dot offline';
+        text.textContent = 'Offline';
+      }
+    } catch {
+      dot.className = 'health-dot offline';
+      text.textContent = 'Offline';
+    }
+  }
+
+  function startHealthPolling() {
+    if (_healthPollId) return;
+    _healthPollId = setInterval(checkHealth, 10000);
+  }
+
+  function stopHealthPolling() {
+    if (_healthPollId) { clearInterval(_healthPollId); _healthPollId = null; }
+  }
+
+  checkHealth();
+
+  // ── Sidebar agent list ──
+  async function refreshSidebarAgents() {
+    const list = document.getElementById('sidebar-agent-list');
+    try {
+      const r = await fetch('/api/operator/agents');
+      const d = await r.json();
+      if (!d.agents || d.agents.length === 0) {
+        list.innerHTML = '<div style="padding: 12px 16px; font-size: 12px; color: var(--text-muted);">No agents yet</div>';
+        return;
+      }
+      list.innerHTML = d.agents.map(a => `
+        <div class="sidebar-agent-item" onclick="quickLaunchAgent('${a.slug}')">
+          <div class="sidebar-agent-avatar">${makeAvatar(a.name)}</div>
+          <div class="sidebar-agent-name">${a.name}</div>
+        </div>
+      `).join('');
+    } catch {
+      list.innerHTML = '<div style="padding: 12px 16px; font-size: 12px; color: var(--text-muted);">Failed to load</div>';
+    }
+  }
+
+  function quickLaunchAgent(slug) {
+    switchView('operator');
+    setTimeout(() => launchAgent(slug), 100);
+  }
+
+  // ── Delete modal ──
+  let _deleteCallback = null;
+  function showDeleteModal(agentName, agentSlug, onConfirm) {
+    document.getElementById('delete-modal-desc').textContent =
+      'This will permanently delete the agent and all its sessions and memories. This cannot be undone.';
+    document.getElementById('delete-modal-detail').innerHTML =
+      `<strong>${agentName}</strong><br><span style="color:var(--text-muted)">${agentSlug}</span>`;
+    _deleteCallback = onConfirm;
+    document.getElementById('delete-confirm-btn').onclick = () => {
+      const cb = _deleteCallback;
+      closeDeleteModal();
+      if (cb) cb();
+    };
+    document.getElementById('delete-modal').classList.add('open');
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('delete-modal').classList.remove('open');
+    _deleteCallback = null;
+  }
+
+  refreshSidebarAgents();
+  setInterval(refreshSidebarAgents, 30000);
+</script>
+</body>
+</html>

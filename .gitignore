@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Runtime config (contains API keys — configure via Settings UI after install)
+config.json
+
+# Environment variables
+.env
+
+# Logs
+logs/*.log
+
+# User-generated agents and their runtime data
+agents/*/sessions/
+agents/*/memory.json
+
+# User-created skills
+skills/generated/*.js
+
+# PageIndex data directory
+data/pageindex/
+
+# Claude Code personal settings
+.claude/
