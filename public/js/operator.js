@@ -1135,6 +1135,25 @@ async function onFilePicked(event) {
   event.target.value = '';
 }
 
+// Clipboard paste wiring
+function _initClipboardPaste() {
+  operatorInput.addEventListener('paste', async e => {
+    if (!currentSessionId) return;
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    const imageItems = Array.from(items).filter(item => item.type.startsWith('image/'));
+    if (!imageItems.length) return;
+    e.preventDefault();
+    for (const item of imageItems) {
+      const file = item.getAsFile();
+      if (!file) continue;
+      const ext = item.type.split('/')[1] || 'png';
+      const named = new File([file], `clipboard-${Date.now()}.${ext}`, { type: item.type });
+      await _addFiles([named]);
+    }
+  });
+}
+
 // Drag-drop wiring — called once on page load
 let _dragCounter = 0;
 
@@ -1239,3 +1258,4 @@ window.deleteSession = deleteSession;
 window.viewSession = viewSession;
 
 _initDragDrop();
+_initClipboardPaste();
